@@ -102,35 +102,33 @@ namespace BitMap_Lib
 		_unpackBitMap(map_buff, length);
 	}
 
-	const BYTE* BitMap::data(uint_32 x, uint_32 y, uint_32 channel)
+	unique_ptr<BYTE> BitMap::data(uint_32 x, uint_32 y, uint_32 channel)
 	{
 		x = x < 0 ? 0 : x;
 		x = x > _width - 1 ? _width - 1 : x;
 		y = y < 0 ? 0 : y;
 		y = y > _height - 1 ? _height - 1 : y;
 
-		const BYTE* pixle = nullptr;
+		unique_ptr<BYTE> pixle = nullptr;
 		uint_64 distance = 0;
 		if (_spectrum == 1)
 		{
 			distance = x + (_height - y) * _width;
-			auto temp = new BYTE(*(_data + distance / 8));
-			*temp = *temp << distance % 8;
-			*temp = *temp >> 7;
-			pixle = temp;
+			pixle = unique_ptr<BYTE>(new BYTE(*(_data + distance / 8)));
+			*pixle = *pixle << distance % 8;
+			*pixle = *pixle >> 7;
 		}
 		if (_spectrum == 4)
 		{
 			distance = x + (_height - y) * _width;
-			auto temp = new BYTE(*(_data + distance / 2));
-			*temp = *temp << (distance % 2) * 4;
-			*temp = *temp >> (4 - (distance % 2) * 4);
-			pixle = temp;
+			pixle = unique_ptr<BYTE>(new BYTE(*(_data + distance / 2)));
+			*pixle = *pixle << (distance % 2) * 4;
+			*pixle = *pixle >> (4 - (distance % 2) * 4);
 		}
 		else if (_spectrum >= 8)
 		{
 			distance = (x + (_height - y) * _width) * (_spectrum/8) + channel;
-			pixle = _data + distance;
+			pixle = unique_ptr<BYTE>(new BYTE(*(_data + distance)));
 		}
 
 		return pixle;

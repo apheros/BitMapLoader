@@ -82,7 +82,7 @@ namespace BitMap_Lib
 		~BitMap();
 
 	public:
-		const BYTE* data(uint_32 x, uint_32 y, uint_32 channel = 0);
+		std::unique_ptr<BYTE> data(uint_32 x, uint_32 y, uint_32 channel = 0);
 		void setPixleData(const BYTE* pixle_data);
 
 	private:

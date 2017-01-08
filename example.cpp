@@ -12,9 +12,14 @@ int main(int argc, char* argv[])
 	try
 	{
 		BitMap* map = new BitMap(path);
-		auto pixle = map->data(map->width() / 2, map->height() / 2, 0);
 
-		cout << "pixel: " << pixle << endl;
+		auto x = map->width() / 2;
+		auto y = map->height() / 2;
+		auto channel = 0;
+
+		auto pixle = map->data(x, y, channel);
+
+		cout << *pixle << endl;
 
 		delete map;
 	}

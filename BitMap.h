@@ -4,6 +4,7 @@
 #endif
 
 #include <string>
+#include <memory>
 
 
 namespace BitMap_Lib

@@ -11,15 +11,18 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		BitMap* map = new BitMap(path);
+		auto map = new BitMap(path);
 
 		auto x = map->width() / 2;
 		auto y = map->height() / 2;
 		auto channel = 0;
 
-		auto pixle = map->data(x, y, channel);
+		auto pixle = map->getData(x, y, channel);
+		auto color = map->getColor(x, y);
 
+		cout << hex;
 		cout << *pixle << endl;
+		cout << *color << endl;
 
 		delete map;
 	}

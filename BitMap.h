@@ -78,22 +78,24 @@ namespace BitMap_Lib
 	public:
 		BitMap();
 		BitMap(const std::string& path_str);
-		BitMap(const BYTE* map_buff, uint_32 length);
-		BitMap(const BYTE* pixle_buff, uint_32 width, uint_32 height, uint_32 spectrum);
+		BitMap(BYTE* map_buff, uint_32 length);
+		BitMap(BYTE* pixle_buff, uint_32 width, uint_32 height, uint_32 spectrum);
 		~BitMap();
 
 	public:
-		std::unique_ptr<BYTE> data(uint_32 x, uint_32 y, uint_32 channel = 0);
-		void setPixleData(const BYTE* pixle_data);
+		std::unique_ptr<BYTE> getData(uint_32 x, uint_32 y, uint_32 channel = 0);
+		std::unique_ptr<DWORD> getColor(uint_32 x, uint_32 y);
+		void setPixleData(const BYTE pixle_data);
+		void setColorData(const DWORD pixle_data);
 
 	private:
 		void _loadBitMap(const std::string& file_path);
-		void _unpackBitMap(const BYTE* map_buff, uint_32 length);
+		void _unpackBitMap(BYTE* map_buff, uint_32 length);
 
 	private:
 		BitMapFileHeader* _file_header;
 		BitMapInfoHeader* _info_header;
-		const BYTE* _data;
+		BYTE* _data;
 
 	private:
 		DEFINE_PROPERTY(uint_32, width);

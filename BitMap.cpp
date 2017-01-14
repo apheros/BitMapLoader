@@ -57,16 +57,16 @@ namespace BitMap_Lib
 		_loadBitMap(path_str);
 	}
 
-	BitMap::BitMap(const BYTE* map_buff, uint_32 length)
+	BitMap::BitMap(BYTE* map_buff, uint_32 length)
 	{
 		_unpackBitMap(map_buff, length);
 	}
 
 	//spectrum is the bits count of bmp
-	BitMap::BitMap(const BYTE* pixle_buff, unsigned long width, unsigned long height, unsigned long spectrum)
+	BitMap::BitMap(BYTE* pixle_buff, unsigned long width, unsigned long height, unsigned long spectrum)
 		:_file_header(nullptr)
 		,_info_header(nullptr)
-		, _data(pixle_buff)
+		,_data(pixle_buff)
 		,_width(width)
 		,_height(height)
 		,_depth(1)
@@ -76,9 +76,9 @@ namespace BitMap_Lib
 
 	BitMap::~BitMap()
 	{
+		delete[] (_data - _file_header->bfOffBits);
 		delete _file_header;
 		delete _info_header;
-		delete[] _data;
 	}
 
 	void BitMap::_loadBitMap(const string& file_path)
@@ -102,56 +102,96 @@ namespace BitMap_Lib
 		_unpackBitMap(map_buff, length);
 	}
 
-	unique_ptr<BYTE> BitMap::data(uint_32 x, uint_32 y, uint_32 channel)
+	unique_ptr<BYTE> BitMap::getData(uint_32 x, uint_32 y, uint_32 channel)
 	{
 		x = x < 0 ? 0 : x;
 		x = x > _width - 1 ? _width - 1 : x;
 		y = y < 0 ? 0 : y;
 		y = y > _height - 1 ? _height - 1 : y;
+		channel = channel < 0 ? 0 : channel;
+		channel = channel > (_spectrum / 8) ? (_spectrum / 8) : channel;
 
 		unique_ptr<BYTE> pixle = nullptr;
 		uint_64 distance = 0;
 		if (_spectrum == 1)
 		{
 			distance = x + (_height - y) * _width;
-			pixle = unique_ptr<BYTE>(new BYTE(*(_data + distance / 8)));
+			pixle = make_unique<BYTE>(*(_data + distance / 8));
 			*pixle = *pixle << distance % 8;
 			*pixle = *pixle >> 7;
 		}
 		if (_spectrum == 4)
 		{
 			distance = x + (_height - y) * _width;
-			pixle = unique_ptr<BYTE>(new BYTE(*(_data + distance / 2)));
+			pixle = make_unique<BYTE>(*(_data + distance / 2));
 			*pixle = *pixle << (distance % 2) * 4;
 			*pixle = *pixle >> (4 - (distance % 2) * 4);
 		}
 		else if (_spectrum >= 8)
 		{
 			distance = (x + (_height - y) * _width) * (_spectrum/8) + channel;
-			pixle = unique_ptr<BYTE>(new BYTE(*(_data + distance)));
+			pixle = make_unique<BYTE>(*(_data + distance));
 		}
 
 		return pixle;
 	}
-}
 
-void BitMap_Lib::BitMap::_unpackBitMap(const BYTE* map_buff, unsigned long length)
-{
-	if (length > BITMAP_HEADER_LENGTH && map_buff[0] == 'B' && map_buff[1] == 'M')
+	std::unique_ptr<DWORD> BitMap::getColor(uint_32 x, uint_32 y)
 	{
-		_file_header = new BitMapFileHeader();
-		_info_header = new BitMapInfoHeader();
+		x = x < 0 ? 0 : x;
+		x = x > _width - 1 ? _width - 1 : x;
+		y = y < 0 ? 0 : y;
+		y = y > _height - 1 ? _height - 1 : y;
 
-		_file_header->unpack(map_buff);
-		_info_header->unpack(map_buff);
-
-		if (length >= _file_header->bfSize)
+		unique_ptr<DWORD> pixle = nullptr;
+		uint_64 distance = 0;
+		if (_spectrum == 1)
 		{
-			_data = (map_buff + _file_header->bfOffBits);
-			_width = _info_header->biWidth;
-			_height = _info_header->biHeight;
-			_depth = _info_header->biPlanes;
-			_spectrum = _info_header->biBitCount;
+			distance = x + (_height - y) * _width;
+			pixle = make_unique<DWORD>(*(_data + distance / 8));
+			*pixle = *pixle << distance % 8;
+			*pixle = *pixle >> 7;
+		}
+		if (_spectrum == 4)
+		{
+			distance = x + (_height - y) * _width;
+			pixle = make_unique<DWORD>(*(_data + distance / 2));
+			*pixle = *pixle << (distance % 2) * 4;
+			*pixle = *pixle >> (4 - (distance % 2) * 4);
+		}
+		else if (_spectrum >= 8 && _spectrum <= 32)
+		{
+			distance = (x + (_height - y) * _width) * (_spectrum / 8);
+			pixle = make_unique<DWORD>(0);
+			for (auto i = 0; i < (_spectrum / 8) && i < 4; i++)
+			{
+				*pixle = *pixle | (*(_data + distance + i) << (24 - i*8));
+			}
+
+			*pixle = *pixle >> (32 - _spectrum);
+		}
+
+		return pixle;
+	}
+
+	void BitMap::_unpackBitMap(BYTE* map_buff, unsigned long length)
+	{
+		if (length > BITMAP_HEADER_LENGTH && map_buff[0] == 'B' && map_buff[1] == 'M')
+		{
+			_file_header = new BitMapFileHeader();
+			_info_header = new BitMapInfoHeader();
+
+			_file_header->unpack(map_buff);
+			_info_header->unpack(map_buff);
+
+			if (length >= _file_header->bfSize)
+			{
+				_data = map_buff + _file_header->bfOffBits;
+				_width = _info_header->biWidth;
+				_height = _info_header->biHeight;
+				_depth = _info_header->biPlanes;
+				_spectrum = _info_header->biBitCount;
+			}
 		}
 	}
 }

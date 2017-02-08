@@ -83,8 +83,8 @@ namespace BitMap_Lib
 		~BitMap();
 
 	public:
-		std::unique_ptr<BYTE> getData(uint_32 x, uint_32 y, uint_32 channel = 0);
-		std::unique_ptr<DWORD> getColor(uint_32 x, uint_32 y);
+		BYTE getData(uint_32 x, uint_32 y, uint_32 channel = 0);
+		DWORD getColor(uint_32 x, uint_32 y);
 		void setPixleData(const BYTE pixle_data);
 		void setColorData(const DWORD pixle_data);
 

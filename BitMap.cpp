@@ -102,7 +102,7 @@ namespace BitMap_Lib
 		_unpackBitMap(map_buff, length);
 	}
 
-	unique_ptr<BYTE> BitMap::getData(uint_32 x, uint_32 y, uint_32 channel)
+	BYTE BitMap::getData(uint_32 x, uint_32 y, uint_32 channel)
 	{
 		x = x < 0 ? 0 : x;
 		x = x > _width - 1 ? _width - 1 : x;
@@ -111,64 +111,63 @@ namespace BitMap_Lib
 		channel = channel < 0 ? 0 : channel;
 		channel = channel > (_spectrum / 8) ? (_spectrum / 8) : channel;
 
-		unique_ptr<BYTE> pixle = nullptr;
+		BYTE pixle = 0x00;
 		uint_64 distance = 0;
 		if (_spectrum == 1)
 		{
 			distance = x + (_height - y) * _width;
-			pixle = make_unique<BYTE>(*(_data + distance / 8));
-			*pixle = *pixle << distance % 8;
-			*pixle = *pixle >> 7;
+			pixle = BYTE(*(_data + distance / 8));
+			pixle = pixle << distance % 8;
+			pixle = pixle >> 7;
 		}
 		if (_spectrum == 4)
 		{
 			distance = x + (_height - y) * _width;
-			pixle = make_unique<BYTE>(*(_data + distance / 2));
-			*pixle = *pixle << (distance % 2) * 4;
-			*pixle = *pixle >> (4 - (distance % 2) * 4);
+			pixle = BYTE(*(_data + distance / 2));
+			pixle = pixle << (distance % 2) * 4;
+			pixle = pixle >> (4 - (distance % 2) * 4);
 		}
 		else if (_spectrum >= 8)
 		{
 			distance = (x + (_height - y) * _width) * (_spectrum/8) + channel;
-			pixle = make_unique<BYTE>(*(_data + distance));
+			pixle = BYTE(*(_data + distance));
 		}
 
 		return pixle;
 	}
 
-	std::unique_ptr<DWORD> BitMap::getColor(uint_32 x, uint_32 y)
+	DWORD BitMap::getColor(uint_32 x, uint_32 y)
 	{
 		x = x < 0 ? 0 : x;
 		x = x > _width - 1 ? _width - 1 : x;
 		y = y < 0 ? 0 : y;
 		y = y > _height - 1 ? _height - 1 : y;
 
-		unique_ptr<DWORD> pixle = nullptr;
+		DWORD pixle = 0x00;
 		uint_64 distance = 0;
 		if (_spectrum == 1)
 		{
 			distance = x + (_height - y) * _width;
-			pixle = make_unique<DWORD>(*(_data + distance / 8));
-			*pixle = *pixle << distance % 8;
-			*pixle = *pixle >> 7;
+			pixle = DWORD(*(_data + distance / 8));
+			pixle = pixle << distance % 8;
+			pixle = pixle >> 7;
 		}
 		if (_spectrum == 4)
 		{
 			distance = x + (_height - y) * _width;
-			pixle = make_unique<DWORD>(*(_data + distance / 2));
-			*pixle = *pixle << (distance % 2) * 4;
-			*pixle = *pixle >> (4 - (distance % 2) * 4);
+			pixle = DWORD(*(_data + distance / 2));
+			pixle = pixle << (distance % 2) * 4;
+			pixle = pixle >> (4 - (distance % 2) * 4);
 		}
 		else if (_spectrum >= 8 && _spectrum <= 32)
 		{
 			distance = (x + (_height - y) * _width) * (_spectrum / 8);
-			pixle = make_unique<DWORD>(0);
 			for (auto i = 0; i < (_spectrum / 8) && i < 4; i++)
 			{
-				*pixle = *pixle | (*(_data + distance + i) << (24 - i*8));
+				pixle = pixle | (*(_data + distance + i) << (24 - i*8));
 			}
 
-			*pixle = *pixle >> (32 - _spectrum);
+			pixle = pixle >> (32 - _spectrum);
 		}
 
 		return pixle;

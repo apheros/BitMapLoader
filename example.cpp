@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
 		auto color = map->getColor(x, y);
 
 		cout << hex;
-		cout << *pixle << endl;
-		cout << *color << endl;
+		cout << pixle << endl;
+		cout << color << endl;
 
 		delete map;
 	}
